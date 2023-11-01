@@ -27,4 +27,4 @@ def parse_file(filename, debug=False):
 
     with open(filename) as f:
         s = f.read()
-    return CommandSequence(parse_commands(s, debug))
+    return parse_commands(s, debug)

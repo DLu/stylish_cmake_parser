@@ -4,11 +4,11 @@ from .command_group import CommandGroup
 
 
 class CommandSequence:
-    def __init__(self, initial_contents=None, depth=0):
+    def __init__(self, initial_contents=None, depth=0, parent=None):
         self.contents = []
-
         self.content_map = collections.defaultdict(list)
         self.depth = depth
+        self.parent = parent
 
         if initial_contents:
             for content in initial_contents:

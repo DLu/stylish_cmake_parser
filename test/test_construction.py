@@ -46,10 +46,9 @@ def test_simple_construction():
 
 
 def test_raw_construction():
-    seq = CommandSequence()
     cmd = Command('project')
     cmd.add_token('basic')
-    seq.add(cmd)
+    seq = CommandSequence([cmd])
     assert str(seq) == 'project(basic)'
 
 

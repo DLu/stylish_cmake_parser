@@ -14,8 +14,8 @@ class CMakeParseException(Exception):
     pass
 
 
-def match_command_groups(contents, base_depth=0):
-    revised_seq = CommandSequence()
+def match_command_groups(contents, base_depth=0, parent=None):
+    revised_seq = CommandSequence(depth=base_depth, parent=parent)
 
     current = []
     group = None
@@ -35,9 +35,8 @@ def match_command_groups(contents, base_depth=0):
                 elif content.command_name == 'end' + group.command_name:
                     depth -= 1
                     if depth == base_depth:
-                        recursive_contents = match_command_groups(current, base_depth + 1)
-                        sub = CommandSequence(recursive_contents, depth=base_depth + 1)
-                        cg = CommandGroup(group, sub, content)
+                        recursive_seq = match_command_groups(current, base_depth + 1, revised_seq)
+                        cg = CommandGroup(group, recursive_seq, content)
                         revised_seq.add(cg)
                         group = None
                         current = []
