@@ -1,13 +1,12 @@
 from .command_group import CommandGroup
 from .command_sequence import CommandSequence
 from .command import Command
-from .scanner import CMakeScanner, TokenType
+from .scanner import CMakeScanner, TokenType, WhiteSpaceTokens
 from .section import Section, SectionStyle
 
 import sys
 
-ALL_WHITESPACE = [TokenType.whitespace, TokenType.newline]
-NOT_REAL = ALL_WHITESPACE + [TokenType.comment]
+NOT_REAL = WhiteSpaceTokens + [TokenType.comment]
 
 
 class CMakeParseException(Exception):
@@ -147,7 +146,7 @@ class CMakeParser:
             cat = self.match(TokenType.caps)
             original += cat
             style.name_val_sep = ''
-            while self.get_type() in ALL_WHITESPACE:
+            while self.get_type() in WhiteSpaceTokens:
                 s = self.match()
                 original += s
                 style.name_val_sep += s
@@ -158,7 +157,7 @@ class CMakeParser:
         current = ''
         while self.next_real_type() not in [TokenType.left_paren, TokenType.right_paren, TokenType.caps]:
             token_type = self.get_type()
-            if token_type in ALL_WHITESPACE:
+            if token_type in WhiteSpaceTokens:
                 token = self.match()
                 original += token
                 current += token

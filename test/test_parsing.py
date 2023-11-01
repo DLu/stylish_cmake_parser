@@ -2,6 +2,7 @@ import pytest
 import pathlib
 import tempfile
 from stylish_cmake_parser import parse_file
+from stylish_cmake_parser.scanner import compare_token_streams
 from stylish_cmake_parser.command import Command
 
 DATA_FOLDER = pathlib.Path(__file__).parent / 'data'
@@ -19,7 +20,7 @@ def write_to_temp_and_compare(result, original):
         temp.write(str(result))
     regenerated = open(temp.name).read()
     temp.close()
-    assert original == regenerated
+    compare_token_streams(original, regenerated)
 
 
 @pytest.mark.parametrize('filepath', TEST_FILES, ids=TEST_IDS)

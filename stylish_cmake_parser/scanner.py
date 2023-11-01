@@ -9,6 +9,7 @@ TokenType = IntEnum('TokenType', ['word', 'caps', 'string_literal', 'left_paren'
                     'right_paren', 'whitespace', 'newline', 'comment'])
 
 ALL_CAPS = re.compile('^[A-Z_]+$')
+WhiteSpaceTokens = [TokenType.whitespace, TokenType.newline]
 
 
 def word_cb(scanner, token):
@@ -27,3 +28,25 @@ CMakeScanner = re.Scanner([
     (r'\n', lambda scanner, token: Token(TokenType.newline, token)),
     (r'[ \t]+', lambda scanner, token: Token(TokenType.whitespace, token)),
 ])
+
+
+def compare_token_streams(s0, s1):
+    tokens0, remainder0 = CMakeScanner.scan(s0)
+    tokens1, remainder1 = CMakeScanner.scan(s1)
+
+    while tokens0 and tokens1:
+        if tokens0[0].type in WhiteSpaceTokens:
+            tokens0.pop(0)
+        elif tokens1[0].type in WhiteSpaceTokens:
+            tokens1.pop(0)
+        else:
+            token0 = tokens0.pop(0)
+            token1 = tokens1.pop(0)
+            assert token0.value == token1.value, f'{token0} {token1}'
+
+    while tokens1 and tokens1[0].type in WhiteSpaceTokens:
+        tokens1.pop(0)
+
+    assert not tokens0
+    assert not tokens1, tokens1
+    assert remainder0 == remainder1
