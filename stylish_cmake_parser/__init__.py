@@ -10,13 +10,13 @@ __all__ = ['Command', 'CommandGroup', 'CommandSequence', 'CMakeParseException', 
 
 def parse_commands(s, debug=False):
     parser = CMakeParser(s, debug=debug)
-    return parser.contents
+    return parser.seq
 
 
 def parse_command(s, debug=False):
     parser = CMakeParser(s, debug=debug)
-    assert len(parser.contents) == 1
-    return parser.contents[0]
+    assert len(parser.seq.contents) == 1
+    return parser.seq.contents[0]
 
 
 def parse_file(filename, debug=False):

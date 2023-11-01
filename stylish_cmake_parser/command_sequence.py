@@ -21,5 +21,8 @@ class CommandSequence:
         elif isinstance(content, CommandGroup):
             self.content_map['group'].append(content)
 
+    def __iter__(self):
+        yield from self.contents
+
     def __repr__(self):
-        return ''.join(map(str, self.contents))
+        return ''.join(map(str, self))

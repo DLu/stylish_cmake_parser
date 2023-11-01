@@ -15,7 +15,7 @@ class CMakeParseException(Exception):
 
 
 def match_command_groups(contents, base_depth=0):
-    revised_contents = []
+    revised_seq = CommandSequence()
 
     current = []
     group = None
@@ -27,7 +27,7 @@ def match_command_groups(contents, base_depth=0):
                 group = content
                 depth = base_depth + 1
             else:
-                revised_contents.append(content)
+                revised_seq.add(content)
         else:
             if isinstance(content, Command):
                 if content.command_name == group.command_name:
@@ -38,7 +38,7 @@ def match_command_groups(contents, base_depth=0):
                         recursive_contents = match_command_groups(current, base_depth + 1)
                         sub = CommandSequence(recursive_contents, depth=base_depth + 1)
                         cg = CommandGroup(group, sub, content)
-                        revised_contents.append(cg)
+                        revised_seq.add(cg)
                         group = None
                         current = []
                         continue
@@ -47,12 +47,12 @@ def match_command_groups(contents, base_depth=0):
     if depth != base_depth:
         raise CMakeParseException(f'Unmatched {group.command_name} tag')
 
-    return revised_contents
+    return revised_seq
 
 
 class CMakeParser:
     def __init__(self, s, debug=False):
-        self.contents = []
+        self.seq = CommandSequence()
 
         self.tokens = scan_cmake_tokens(s)
 
@@ -63,21 +63,21 @@ class CMakeParser:
         while self.tokens:
             token_type = self.get_type()
             if token_type == TokenType.comment:
-                self.contents.append(self.match(token_type))
+                self.seq.add(self.match(token_type))
             elif token_type == TokenType.newline or token_type == TokenType.whitespace:
                 s = self.match(token_type)
-                self.contents.append(s)
+                self.seq.add(s)
             elif token_type in [TokenType.word, TokenType.caps]:
                 cmd = self.parse_command()
-                self.contents.append(cmd)
+                self.seq.add(cmd)
             else:
                 raise CMakeParseException(f'Unexpected token of type {token_type.name}')
 
         # Match Command Groups
-        self.contents = match_command_groups(self.contents)
+        self.seq = match_command_groups(self.seq.contents, self.seq.depth)
 
         if debug:
-            for chunk in self.contents:
+            for chunk in self.seq:
                 print(f'[{chunk}]')
 
     def get_type(self):
