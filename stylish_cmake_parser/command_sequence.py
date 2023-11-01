@@ -17,3 +17,6 @@ class CommandSequence:
                 self.content_map[content.command_name].append(content)
             elif content.__class__ == CommandGroup:
                 self.content_map['group'].append(content)
+
+    def __repr__(self):
+        return ''.join(map(str, self.contents))
