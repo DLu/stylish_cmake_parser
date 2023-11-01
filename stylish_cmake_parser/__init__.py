@@ -1,8 +1,11 @@
 import pathlib
+from .command import Command
+from .command_group import CommandGroup
 from .command_sequence import CommandSequence
 from .parser import CMakeParser, CMakeParseException
+from .section import Section, SectionStyle
 
-__all__ = ['CMakeParseException']
+__all__ = ['Command', 'CommandGroup', 'CommandSequence', 'CMakeParseException', 'Section', 'SectionStyle']
 
 
 def parse_commands(s, debug=False):

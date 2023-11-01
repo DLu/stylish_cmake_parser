@@ -1,9 +1,8 @@
 import pytest
 import pathlib
 import tempfile
-from stylish_cmake_parser import parse_file, parse_command
+from stylish_cmake_parser import parse_file, parse_command, Command
 from stylish_cmake_parser.scanner import compare_token_streams
-from stylish_cmake_parser.command import Command
 
 DATA_FOLDER = pathlib.Path(__file__).parent / 'data'
 TEST_FILES = sorted(DATA_FOLDER.iterdir())
