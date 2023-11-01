@@ -18,7 +18,6 @@ class Command:
         for s in self.get_real_sections():
             if s.name == key:
                 return s
-        return None
 
     def get_sections(self, key):
         return [s for s in self.get_real_sections() if s.name == key]
