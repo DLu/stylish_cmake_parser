@@ -2,6 +2,8 @@ from .section import Section
 
 
 class Command:
+    FORCE_REGENERATION = False
+
     def __init__(self, command_name):
         self.command_name = command_name
         self.original = None
@@ -60,7 +62,7 @@ class Command:
         self.changed = True
 
     def __repr__(self):
-        if self.original and not self.changed:
+        if self.original and not self.changed and not Command.FORCE_REGENERATION:
             return self.original
 
         s = self.command_name + self.pre_paren + '('
