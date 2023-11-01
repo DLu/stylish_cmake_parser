@@ -3,14 +3,9 @@ import pathlib
 from stylish_cmake_parser import parse_file
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('path', type=pathlib.Path)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    k = parse_file(args.path, debug=True)
-    print(k.contents[0].get_sections(''))
-
-
-if __name__ == '__main__':
-    main()
+    parse_file(args.path, debug=True)
