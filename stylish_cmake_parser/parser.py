@@ -23,13 +23,13 @@ def match_command_groups(contents, base_depth=0):
 
     for content in contents:
         if group is None:
-            if content.__class__ == Command and content.command_name in ['if', 'foreach']:
+            if isinstance(content, Command) and content.command_name in ['if', 'foreach']:
                 group = content
                 depth = base_depth + 1
             else:
                 revised_contents.append(content)
         else:
-            if content.__class__ == Command:
+            if isinstance(content, Command):
                 if content.command_name == group.command_name:
                     depth += 1
                 elif content.command_name == 'end' + group.command_name:
