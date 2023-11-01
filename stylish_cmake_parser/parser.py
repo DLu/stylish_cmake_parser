@@ -5,6 +5,7 @@ from .scanner import CMakeScanner, TokenType, WhiteSpaceTokens
 from .section import Section, SectionStyle
 
 import sys
+import collections
 
 NOT_REAL = WhiteSpaceTokens + [TokenType.comment]
 
@@ -60,7 +61,7 @@ class CMakeParser:
 
         if debug:
             for token_type, token in self.tokens:
-                print(f'[{token_type}]{repr(token)}')
+                print(f'[{token_type.name:>11}]{repr(token)}')
 
         while self.tokens:
             token_type = self.get_type()
@@ -73,7 +74,7 @@ class CMakeParser:
                 cmd = self.parse_command()
                 self.contents.append(cmd)
             else:
-                raise CMakeParseException(f'Unexpected token of type {token_type}')
+                raise CMakeParseException(f'Unexpected token of type {token_type.name}')
 
         # Match Command Groups
         self.contents = match_command_groups(self.contents)
@@ -92,14 +93,19 @@ class CMakeParser:
                 return token.type
 
     def match(self, token_type=None):
+        if not self.tokens:
+            if token_type is None:
+                raise CMakeParseException('Attempt to match any token but none left!')
+            else:
+                raise CMakeParseException(f'Attempt to match {token_type.name} token but none left!')
         if token_type is None or self.get_type() == token_type:
             token = self.tokens.pop(0)
             return token.value
         else:
             sys.stderr.write('Token Dump:\n')
             for token in self.tokens:
-                sys.stderr.write('{token}\n')
-            raise CMakeParseException(f'Expected type "{token_type}" but got "{self.get_type()}"')
+                sys.stderr.write(f'{token}\n')
+            raise CMakeParseException(f'Expected type "{token_type.name}" but got "{self.get_type()}"')
 
     def parse_command(self):
         command_name = self.match()
@@ -126,7 +132,11 @@ class CMakeParser:
                     if paren_depth == 0:
                         cmd.original = original
                         return cmd
+                    else:
+                        cmd.sections[-1].add(token.value)
                 elif token.type == TokenType.left_paren:
+                    # TODO: Improve support for nested parens
+                    cmd.sections[-1].add(token.value)
                     paren_depth += 1
                 else:
                     cmd.sections.append(token.value)
@@ -153,7 +163,7 @@ class CMakeParser:
             if len(style.name_val_sep) == 0:
                 style.name_val_sep = ' '
 
-        delims = set()
+        delim_counts = collections.Counter()
         current = ''
         while self.next_real_type() not in [TokenType.left_paren, TokenType.right_paren, TokenType.caps]:
             token_type = self.get_type()
@@ -163,19 +173,14 @@ class CMakeParser:
                 current += token
             else:
                 if len(current) > 0:
-                    delims.add(current)
+                    delim_counts[current] += 1
                 current = ''
                 token = self.match()
                 original += token
                 tokens.append(token)
-        if len(current) > 0:
-            delims.add(current)
-        if len(delims) > 0:
-            if len(delims) == 1:
-                style.val_sep = list(delims)[0]
-            else:
-                # TODO: Smarter multi delim parsing
-                # print(delims)
-                style.val_sep = list(delims)[0]
+        assert not current  # Current should be empty
+        if delim_counts:
+            top_n = delim_counts.most_common(1)  # Where n = 1
+            style.val_sep = top_n[0][0]  # Get actual delim from first token
 
         return Section(cat, tokens, style), original
