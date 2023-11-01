@@ -27,3 +27,9 @@ def test_unbalanced():
     with pytest.raises(CMakeParseException) as e_info:
         parse_file(DATA_FOLDER / 'unbalanced.txt')
     assert 'File ended while processing command' in str(e_info)
+
+
+def test_unfinished():
+    with pytest.raises(CMakeParseException) as e_info:
+        parse_file(DATA_FOLDER / 'unfinished.txt')
+    assert 'Attempt to match left_paren token but none left!' in str(e_info)

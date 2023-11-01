@@ -111,8 +111,8 @@ class CMakeParser:
         command_name = self.match()
         original = command_name
         cmd = Command(command_name)
-        while self.get_type() == TokenType.whitespace:
-            s = self.match(TokenType.whitespace)
+        while self.get_type() in WhiteSpaceTokens:
+            s = self.match()
             cmd.pre_paren += s
             original += s
         original += self.match(TokenType.left_paren)

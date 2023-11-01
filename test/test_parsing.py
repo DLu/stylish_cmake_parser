@@ -50,3 +50,18 @@ def test_writing(filepath):
     Command.FORCE_REGENERATION = True
     write_to_temp_and_compare(result, original)
     Command.FORCE_REGENERATION = False
+
+
+def test_debug(capsys):
+    EXPECTED_DEBUG = """[       word]'project'
+[ left_paren]'('
+[       word]'basic'
+[right_paren]')'
+[    newline]'\\n'
+[project(basic)]
+[
+]
+"""
+    parse_file(DATA_FOLDER / 'basic.txt', debug=True)
+    captured = capsys.readouterr()
+    assert captured.out == EXPECTED_DEBUG
