@@ -1,0 +1,2 @@
+if(CATKIN_ENABLE_TESTING)
+# Nothing

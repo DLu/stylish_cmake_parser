@@ -1,7 +1,7 @@
 from .command_group import CommandGroup
 from .command_sequence import CommandSequence
 from .command import Command
-from .scanner import CMakeScanner, TokenType, WhiteSpaceTokens
+from .scanner import scan_cmake_tokens, TokenType, WhiteSpaceTokens
 from .section import Section, SectionStyle
 
 import sys
@@ -44,9 +44,8 @@ def match_command_groups(contents, base_depth=0):
                         continue
             current.append(content)
 
-    # Only will happen if the tags don't match. Shouldn't happen, but resolve leftovers
-    if len(current) > 0:
-        revised_contents += current
+    if depth != base_depth:
+        raise CMakeParseException(f'Unmatched {group.command_name} tag')
 
     return revised_contents
 
@@ -55,9 +54,7 @@ class CMakeParser:
     def __init__(self, s, debug=False):
         self.contents = []
 
-        self.tokens, remainder = CMakeScanner.scan(s)
-        if remainder != '':
-            raise CMakeParseException(f'Unrecognized tokens: {remainder}')
+        self.tokens = scan_cmake_tokens(s)
 
         if debug:
             for token_type, token in self.tokens:

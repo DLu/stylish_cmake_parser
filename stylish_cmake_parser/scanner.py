@@ -30,9 +30,15 @@ CMakeScanner = re.Scanner([
 ])
 
 
+def scan_cmake_tokens(s):
+    tokens, remainder = CMakeScanner.scan(s)
+    assert not remainder
+    return tokens
+
+
 def compare_token_streams(s0, s1):
-    tokens0, remainder0 = CMakeScanner.scan(s0)
-    tokens1, remainder1 = CMakeScanner.scan(s1)
+    tokens0 = scan_cmake_tokens(s0)
+    tokens1 = scan_cmake_tokens(s1)
 
     while tokens0 and tokens1:
         if tokens0[0].type in WhiteSpaceTokens:
@@ -49,4 +55,3 @@ def compare_token_streams(s0, s1):
 
     assert not tokens0
     assert not tokens1, tokens1
-    assert remainder0 == remainder1

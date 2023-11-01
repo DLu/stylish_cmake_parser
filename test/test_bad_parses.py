@@ -33,3 +33,9 @@ def test_unfinished():
     with pytest.raises(CMakeParseException) as e_info:
         parse_file(DATA_FOLDER / 'unfinished.txt')
     assert 'Attempt to match left_paren token but none left!' in str(e_info)
+
+
+def test_unmatched():
+    with pytest.raises(CMakeParseException) as e_info:
+        parse_file(DATA_FOLDER / 'unmatched.txt')
+    assert 'Unmatched if tag' in str(e_info)
