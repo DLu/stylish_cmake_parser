@@ -117,7 +117,7 @@ class CMakeParser:
         while self.tokens:
             token_type = self.next_real_type()
             if token_type in [TokenType.word, TokenType.caps, TokenType.string_literal]:
-                section, s = self.parse_section()
+                section, s = self.parse_section(cmd)
                 cmd.sections.append(section)
                 original += s
             else:
@@ -138,7 +138,7 @@ class CMakeParser:
                     cmd.sections.append(token.value)
         raise CMakeParseException(f'File ended while processing command "{command_name}"')
 
-    def parse_section(self):
+    def parse_section(self, parent):
         original = ''
         style = SectionStyle()
         tokens = []
@@ -179,4 +179,4 @@ class CMakeParser:
             top_n = delim_counts.most_common(1)  # Where n = 1
             style.val_sep = top_n[0][0]  # Get actual delim from first token
 
-        return Section(cat, tokens, style), original
+        return Section(cat, tokens, style, parent), original

@@ -20,7 +20,7 @@ INSTALL_COMMAND4 = """install(
 def test_simple_construction():
     cmd = Command('install')
     cmd.add_section('FILES')
-    cmd.add(Section('DESTINATION'))
+    cmd.add(Section('DESTINATION', parent=cmd))
     cmd.add_token('${CATKIN_PACKAGE_SHARE_DESTINATION}/data')
 
     sections = cmd.get_sections('FILES')
@@ -103,5 +103,5 @@ def test_styling():
     section.style = SectionStyle('\n    ', '\n      ', '\n      ')
     section = cmd.get_section('DESTINATION')
     section.style.prename = '\n    '
-    cmd.changed = True
+    section.mark_changed()
     assert str(cmd) == INSTALL_COMMAND4

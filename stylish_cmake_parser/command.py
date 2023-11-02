@@ -23,7 +23,7 @@ class Command:
         return [s for s in self.get_real_sections() if s.name == key]
 
     def add_section(self, key, values=None, style=None):
-        self.sections.append(Section(key, values, style))
+        self.sections.append(Section(key, values, style, self))
         self.changed = True
 
     def add(self, section):
@@ -54,7 +54,7 @@ class Command:
     def add_token(self, s):
         sections = self.get_real_sections()
         if len(sections) == 0:
-            self.add(Section(values=[s]))
+            self.add(Section(values=[s], parent=self))
         else:
             last = sections[-1]
             last.values.append(s)

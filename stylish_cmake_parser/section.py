@@ -9,8 +9,9 @@ class SectionStyle:
 
 
 class Section:
-    def __init__(self, name='', values=None, style=None):
+    def __init__(self, name='', values=None, style=None, parent=None):
         self.name = name
+        self.parent = parent
         if values is None:
             self.values = []
         else:
@@ -38,6 +39,10 @@ class Section:
 
     def is_valid(self):
         return len(self.name) > 0 or len(self.values) > 0
+
+    def mark_changed(self):
+        if self.parent:
+            self.parent.changed = True
 
     def __repr__(self):
         s = self.style.prename
