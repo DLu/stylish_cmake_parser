@@ -1,8 +1,8 @@
 class CommandGroup:
-    def __init__(self, initial_tag, contents, close_tag):
-        self.initial_tag = initial_tag
+    def __init__(self, initial_cmd, contents, close_cmd):
+        self.initial_cmd = initial_cmd
         self.contents = contents
-        self.close_tag = close_tag
+        self.close_cmd = close_cmd
 
     def __repr__(self):
-        return str(self.initial_tag) + str(self.contents) + str(self.close_tag)
+        return str(self.initial_cmd) + str(self.contents) + str(self.close_cmd)

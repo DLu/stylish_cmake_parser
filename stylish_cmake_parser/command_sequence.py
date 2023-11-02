@@ -19,7 +19,38 @@ class CommandSequence:
                 self.add(content)
 
     def add(self, content):
-        self.contents.append(content)
+        self.insert(content, smart_whitespace=False)
+
+    def insert(self, content, index=None, smart_whitespace=True):
+        if index is None:
+            # If no index, insert at end
+            index = len(self.contents)
+
+        before = self.contents[:index]
+        after = self.contents[index:]
+
+        to_insert = []
+        if isinstance(content, str) or not smart_whitespace:
+            to_insert.append(content)
+        else:
+            # Insert newline if there's a command immediately before
+            if before and not isinstance(before[-1], str):
+                to_insert.append('\n')
+
+            # Insert tabs if nonzero depth
+            if self.depth:
+                if not self.contents:
+                    to_insert.append('\n')
+                to_insert.append('  ' * self.depth)
+                to_insert.append(content)
+            else:
+                to_insert.append(content)
+
+            if not after:
+                to_insert.append('\n')
+
+        self.contents = before + to_insert + after
+
         if isinstance(content, Command):
             self.content_map[content.command_name].append(content)
 
