@@ -98,6 +98,28 @@ class CommandSequence:
     def get_resolved_tokens(self, cmd, include_name=False):
         return self.resolve_variables(cmd.get_tokens(include_name))
 
+    def remove_command(self, cmd):
+        index = self.contents.index(cmd)
+
+        # Remove indentation before command
+        if self.depth and index > 0 and str(self.contents[index - 1]).endswith('  '):
+            self.contents[index - 1] = self.contents[index - 1][:-2]
+
+        # Remove newline after command
+        if index < len(self.contents) - 1 and str(self.contents[index + 1]).startswith('\n'):
+            self.contents[index + 1] = self.contents[index + 1][1:]
+
+        del self.contents[index]
+        self.content_map[cmd.command_name].remove(cmd)
+
+    def remove_commands(self, cmd_name, recurse=True):
+        for cmd in list(self.content_map[cmd_name]):
+            self.remove_command(cmd)
+
+        if recurse:
+            for group in self.content_map['group']:
+                group.contents.remove_commands(cmd_name, recurse)
+
     def __iter__(self):
         yield from self.contents
 
