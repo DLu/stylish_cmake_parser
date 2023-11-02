@@ -12,7 +12,6 @@ class CommandSequence:
         self.content_map = collections.defaultdict(list)
         self.depth = depth
         self.parent = parent
-        self.variables = {}
 
         if initial_contents:
             for content in initial_contents:
@@ -54,27 +53,25 @@ class CommandSequence:
         if isinstance(content, Command):
             self.content_map[content.command_name].append(content)
 
-            # Track variables
-            if content.command_name == 'set':
-                tokens = content.get_tokens(include_name=True)
-                self.variables[tokens[0]] = ' '.join(tokens[1:])
-            elif content.command_name == 'project':
-                self.variables['PROJECT_NAME'] = content.first_token()
-
         elif isinstance(content, CommandGroup):
             self.content_map['group'].append(content)
 
-    def get_all_variables(self):
-        all_vars = {}
+    def get_variables(self):
+        variables = {}
         if self.parent:
-            all_vars.update(self.parent.get_all_variables())
-        all_vars.update(self.variables)
-        return all_vars
+            variables.update(self.parent.get_variables())
+
+        for content in self.content_map['set']:
+            tokens = content.get_tokens(include_name=True)
+            variables[tokens[0]] = ' '.join(tokens[1:])
+        for content in self.content_map['project']:
+            variables['PROJECT_NAME'] = content.first_token()
+        return variables
 
     def resolve_variables(self, var, error_on_missing=True):
         if isinstance(var, str):
             s = var
-            variables = self.get_all_variables()
+            variables = self.get_variables()
 
             m = VARIABLE_PATTERN.search(s)
             while m:
