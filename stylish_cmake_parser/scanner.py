@@ -41,7 +41,10 @@ def scan_cmake_tokens(s):
     global text_index
     text_index = TextIndex(1, 1)
     tokens, remainder = CMakeScanner.scan(s)
-    assert not remainder
+    if remainder and remainder[0] == '#' and '\n' not in remainder:
+        tokens.append(Token(TokenType.comment, remainder, None, None))
+        remainder = ''
+    assert not remainder, remainder
     return tokens
 
 

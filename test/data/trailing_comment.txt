@@ -1,0 +1,2 @@
+project(basic)
+# This comment does not end with a newline
