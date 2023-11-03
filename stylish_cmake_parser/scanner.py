@@ -25,6 +25,7 @@ def make_token(scanner, token, token_type):
     return Token(token_type, token, start_index, text_index)
 
 
+# Note: Scanner will fail when there are escaped quotation marks within a quoted string
 CMakeScanner = re.Scanner([
     (r'#.*\n', lambda scanner, token: make_token(scanner, token, TokenType.comment)),
     (r'"[^"]*"', lambda scanner, token: make_token(scanner, token, TokenType.string_literal)),

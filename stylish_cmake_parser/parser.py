@@ -105,9 +105,6 @@ class CMakeParser:
             token = self.tokens.pop(0)
             return token.value
         else:
-            sys.stderr.write('Token Dump:\n')
-            for token in self.tokens:
-                sys.stderr.write(f'{token}\n')
             raise CMakeParseException(f'Expected type "{token_type.name}" but got "{self.get_type()}"')
 
     def parse_command(self):
