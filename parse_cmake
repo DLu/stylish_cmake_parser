@@ -1,0 +1,13 @@
+#!/usr/bin/python3
+
+import argparse
+import pathlib
+from stylish_cmake_parser import parse_file
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('cmake_path', type=pathlib.Path)
+    args = parser.parse_args()
+
+    parse_file(args.cmake_path, debug=True)

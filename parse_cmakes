@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+
+import argparse
+import pathlib
+from tqdm import tqdm
+from stylish_cmake_parser import parse_file, CMakeParseException
+
+
+def find_cmakes(root):
+    queue = [root]
+    count = 0
+    while queue:
+        folder = queue.pop(0)
+        if len(queue) % 100 == 0:
+            print(len(queue), count)
+        for path in folder.iterdir():
+            if path.name == 'CMakeLists.txt':
+                yield path
+                count += 1
+            elif path.is_dir():
+                if path.name != '.git' and count < 1000:
+                    queue.append(path)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('root', type=pathlib.Path)
+    args = parser.parse_args()
+
+    cmake_paths = list(find_cmakes(args.root))
+    print(len(cmake_paths))
+    complete = 0
+    caught = 0
+    errors = 0
+    total = 0
+
+    try:
+        for path in tqdm(cmake_paths):
+            total += 1
+            try:
+                parse_file(path)
+                complete += 1
+            except CMakeParseException:
+                caught += 1
+            except Exception:
+                print(path)
+                errors += 1
+                raise
+
+    finally:
+        print(f'{complete}/{total} complete ({complete*100.0/total:.2f}%)')
+        print(f'{caught}/{total} caught errors ({caught*100.0/total:.2f}%)')
+        print(f'{errors}/{total} errors ({errors*100.0/total:.2f}%)')
