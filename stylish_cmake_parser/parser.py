@@ -59,21 +59,28 @@ class CMakeParser:
             for token in self.tokens:
                 print(f'[{token.type.name:>11}]{repr(token.value)}')
 
-        while self.tokens:
-            token_type = self.get_type()
-            if token_type == TokenType.comment:
-                self.seq.add(self.match(token_type))
-            elif token_type == TokenType.newline or token_type == TokenType.whitespace:
-                s = self.match(token_type)
-                self.seq.add(s)
-            elif token_type in [TokenType.word, TokenType.caps]:
-                cmd = self.parse_command()
-                self.seq.add(cmd)
-            else:
-                raise CMakeParseException(f'Unexpected token of type {token_type.name}')
+        try:
+            while self.tokens:
+                token_type = self.get_type()
+                if token_type == TokenType.comment:
+                    self.seq.add(self.match(token_type))
+                elif token_type == TokenType.newline or token_type == TokenType.whitespace:
+                    s = self.match(token_type)
+                    self.seq.add(s)
+                elif token_type in [TokenType.word, TokenType.caps]:
+                    cmd = self.parse_command()
+                    self.seq.add(cmd)
+                else:
+                    raise CMakeParseException(f'Unexpected token of type {token_type.name}')
 
-        # Match Command Groups
-        self.seq = match_command_groups(self.seq.contents, self.seq.depth)
+            # Match Command Groups
+            self.seq = match_command_groups(self.seq.contents, self.seq.depth)
+        except Exception:
+            if self.tokens:
+                token = self.tokens[0]
+                ind = token.start_index
+                sys.stderr.write(f'Error on Line {ind.line_no}, Char {ind.char_no}\n')
+            raise
 
         if debug:
             for chunk in self.seq:
