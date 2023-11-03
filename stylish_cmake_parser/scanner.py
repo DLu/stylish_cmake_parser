@@ -12,10 +12,17 @@ ALL_CAPS = re.compile('^[A-Z_]+$')
 WhiteSpaceTokens = [TokenType.whitespace, TokenType.newline]
 text_index = None
 
+# As a hack to avoid making the grammar more complex,
+# we replace \" (backslash quote) with 𝄥 (Musical symbol drum clef-1)
+# and then convert it back after scanning
+BACKSLASH_QUOTE = '\\"'
+QUOTE_REPLACEMENT = '𝄥'
+
 
 def make_token(scanner, token, token_type):
     global text_index
     start_index = text_index
+    token = token.replace(QUOTE_REPLACEMENT, BACKSLASH_QUOTE)
     if '\n' in token:
         nl_i = token.rindex('\n')
         text_index = TextIndex(text_index.line_no + 1, 1 + len(token) - nl_i - 1)
@@ -25,7 +32,6 @@ def make_token(scanner, token, token_type):
     return Token(token_type, token, start_index, text_index)
 
 
-# Note: Scanner will fail when there are escaped quotation marks within a quoted string
 CMakeScanner = re.Scanner([
     (r'#.*\n', lambda scanner, token: make_token(scanner, token, TokenType.comment)),
     (r'"[^"]*"', lambda scanner, token: make_token(scanner, token, TokenType.string_literal)),
@@ -41,6 +47,8 @@ CMakeScanner = re.Scanner([
 def scan_cmake_tokens(s):
     global text_index
     text_index = TextIndex(1, 1)
+    assert QUOTE_REPLACEMENT not in s
+    s = s.replace(BACKSLASH_QUOTE, QUOTE_REPLACEMENT)
     tokens, remainder = CMakeScanner.scan(s)
     if remainder and remainder[0] == '#' and '\n' not in remainder:
         tokens.append(Token(TokenType.comment, remainder, None, None))
