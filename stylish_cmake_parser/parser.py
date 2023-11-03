@@ -56,8 +56,8 @@ class CMakeParser:
         self.tokens = scan_cmake_tokens(s)
 
         if debug:
-            for token_type, token in self.tokens:
-                print(f'[{token_type.name:>11}]{repr(token)}')
+            for token in self.tokens:
+                print(f'[{token.type.name:>11}]{repr(token.value)}')
 
         while self.tokens:
             token_type = self.get_type()

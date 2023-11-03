@@ -2,35 +2,44 @@ import collections
 from enum import IntEnum
 import re
 
-
-Token = collections.namedtuple('Token', ['type', 'value'])
+TextIndex = collections.namedtuple('TextIndex', ['line_no', 'char_no'])
+Token = collections.namedtuple('Token', ['type', 'value', 'start_index', 'end_index'])
 
 TokenType = IntEnum('TokenType', ['word', 'caps', 'string_literal', 'left_paren',
                     'right_paren', 'whitespace', 'newline', 'comment'])
 
 ALL_CAPS = re.compile('^[A-Z_]+$')
 WhiteSpaceTokens = [TokenType.whitespace, TokenType.newline]
+text_index = None
 
 
-def word_cb(scanner, token):
-    if ALL_CAPS.match(token):
-        return Token(TokenType.caps, token)
+def make_token(scanner, token, token_type):
+    global text_index
+    start_index = text_index
+    if '\n' in token:
+        nl_i = token.rindex('\n')
+        text_index = TextIndex(text_index.line_no + 1, 1 + len(token) - nl_i - 1)
     else:
-        return Token(TokenType.word, token)
+        text_index = TextIndex(text_index.line_no, text_index.char_no + len(token))
+
+    return Token(token_type, token, start_index, text_index)
 
 
 CMakeScanner = re.Scanner([
-    (r'#.*\n', lambda scanner, token: Token(TokenType.comment, token)),
-    (r'"[^"]*"', lambda scanner, token: Token(TokenType.string_literal, token)),
-    (r'\(', lambda scanner, token: Token(TokenType.left_paren, token)),
-    (r'\)', lambda scanner, token: Token(TokenType.right_paren, token)),
-    (r'[^ \t\r\n()#"]+', word_cb),
-    (r'\n', lambda scanner, token: Token(TokenType.newline, token)),
-    (r'[ \t]+', lambda scanner, token: Token(TokenType.whitespace, token)),
+    (r'#.*\n', lambda scanner, token: make_token(scanner, token, TokenType.comment)),
+    (r'"[^"]*"', lambda scanner, token: make_token(scanner, token, TokenType.string_literal)),
+    (r'\(', lambda scanner, token: make_token(scanner, token, TokenType.left_paren)),
+    (r'\)', lambda scanner, token: make_token(scanner, token, TokenType.right_paren)),
+    (r'[^ \t\r\n()#"]+', lambda scanner, token: make_token(scanner,
+     token, TokenType.caps if ALL_CAPS.match(token) else TokenType.word)),
+    (r'\n', lambda scanner, token: make_token(scanner, token, TokenType.newline)),
+    (r'[ \t]+', lambda scanner, token: make_token(scanner, token, TokenType.whitespace)),
 ])
 
 
 def scan_cmake_tokens(s):
+    global text_index
+    text_index = TextIndex(1, 1)
     tokens, remainder = CMakeScanner.scan(s)
     assert not remainder
     return tokens
