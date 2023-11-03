@@ -23,16 +23,16 @@ def match_command_groups(contents, base_depth=0, parent=None):
 
     for content in contents:
         if group is None:
-            if isinstance(content, Command) and content.command_name in ['if', 'foreach']:
+            if isinstance(content, Command) and content.command_name.lower() in ['if', 'foreach']:
                 group = content
                 depth = base_depth + 1
             else:
                 revised_seq.add(content)
         else:
             if isinstance(content, Command):
-                if content.command_name == group.command_name:
+                if content.command_name.lower() == group.command_name.lower():
                     depth += 1
-                elif content.command_name == 'end' + group.command_name:
+                elif content.command_name.lower() == 'end' + group.command_name.lower():
                     depth -= 1
                     if depth == base_depth:
                         recursive_seq = match_command_groups(current, base_depth + 1, revised_seq)
@@ -129,10 +129,9 @@ class CMakeParser:
                         cmd.original = original
                         return cmd
                     else:
-                        cmd.sections[-1].add(token.value)
+                        cmd.add_token(token.value)
                 elif token.type == TokenType.left_paren:
-                    # TODO: Improve support for nested parens
-                    cmd.sections[-1].add(token.value)
+                    cmd.add_token(token.value)
                     paren_depth += 1
                 else:
                     cmd.sections.append(token.value)
