@@ -1,0 +1,10 @@
+# Interesting comment
+if(CATKIN_ENABLE_TESTING)
+  if (SOME_OTHER_CONDITION)
+    roslint_add_test()
+  endif()
+endif()
+
+install(FILES data/cmake.ignore   data/cmake_patterns.ignore     data/package.ignore              data/package_patterns.ignore
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/data
+)
