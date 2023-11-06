@@ -27,4 +27,9 @@ jobs:
       run: python -m pip install -e .[test]
 
     - name: Test package
-      run: python -m pytest
+      run: python -m pytest --cov=stylish_cmake_parser
+
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v3.1.4
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
