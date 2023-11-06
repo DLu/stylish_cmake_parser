@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "stylish_cmake_parser"
+description = "Parser for CMake files with the ability to retain the whitespace 'style' after modifying."
+readme = "README.md"
+authors = [
+  { name = "David V. Lu!!", email = "davidvlu@gmail.com" },
+]
+maintainers = [
+  { name = "David V. Lu!!", email = "davidvlu@gmail.com" },
+]
+
+requires-python = ">=3.8"
+
+dynamic = ["version"]
+
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Topic :: Software Development :: Build Tools",
+]
+
+[project.urls]
+Homepage = "https://github.com/DLu/stylish_cmake_parser"
+"Bug Tracker" = "https://github.com/DLu/stylish_cmake_parser/issues"
+
+[project.optional-dependencies]
+test = [
+  "pytest",
+  "pytest-cov",
+]
+
+[project.scripts]
+parse_cmake = "stylish_cmake_parser.parse:main"
+
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "src/stylish_cmake_parser/_version.py"
