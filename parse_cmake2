@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+import argparse
+import click
+import pathlib
+
+from stylish_cmake_parser import parse_file, Command, CommandGroup
+
+
+def convert_whitespace(s):
+    ns = ''
+    for c in s:
+        if c == ' ':
+            ns += '.'
+        elif c == '\t':
+            ns += '→\t'
+        elif c == '\n':
+            ns += '↵\n'
+        else:
+            ns += c
+    return ns
+
+
+def pretty_command_print(cmd):
+    click.secho(cmd.command_name + convert_whitespace(cmd.pre_paren) + '(', fg='white', nl=False)
+    for section in cmd.sections:
+        if isinstance(section, str):
+            click.secho(convert_whitespace(section), fg='magenta', nl=False)
+            continue
+        click.secho(convert_whitespace(section.style.prename) + section.name, fg='green', nl=False)
+        if len(section.name) > 0:
+            if len(section.values) > 0 or '\n' in section.style.name_val_sep:
+                click.secho(convert_whitespace(section.style.name_val_sep), fg='red', nl=False)
+        click.secho(convert_whitespace(section.style.val_sep.join(section.values)), fg='yellow', nl=False)
+    click.secho(')', fg='white', nl=False)
+
+
+def pretty_cmake_print(cmake):
+    for i, content in enumerate(cmake):
+        if isinstance(content, Command):
+            pretty_command_print(content)
+        elif isinstance(content, CommandGroup):
+            pretty_command_print(content.initial_cmd)
+            pretty_cmake_print(content.contents)
+            pretty_command_print(content.close_cmd)
+        else:
+            click.secho(convert_whitespace(content), fg='blue', nl=False)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('cmake_path', type=pathlib.Path)
+    args = parser.parse_args()
+
+    cmake = parse_file(args.cmake_path)
+    pretty_cmake_print(cmake)
+
+    click.secho()
+    click.secho('== Key ==', fg='bright_white')
+    click.secho('command()', fg='white')
+    click.secho('inter-command whitespace', fg='blue')
+    click.secho('SECTION NAME', fg='green')
+    click.secho('name / val separator', fg='red')
+    click.secho('values', fg='yellow')
+    click.secho('other whitespace', fg='magenta')
