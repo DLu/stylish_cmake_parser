@@ -98,6 +98,33 @@ class CommandSequence:
     def get_resolved_tokens(self, cmd, include_name=False):
         return self.resolve_variables(cmd.get_tokens(include_name))
 
+    def get_build_rules(self, tag, resolve_target_name=False):
+        rules = {}
+        for cmd in self.content_map[tag]:
+            resolved_tokens = self.get_resolved_tokens(cmd, True)
+
+            if resolve_target_name:
+                target = resolved_tokens[0]
+            else:
+                tokens = cmd.get_tokens(True)
+                target = tokens[0]
+
+            deps = resolved_tokens[1:]
+            rules[target] = deps
+        return rules
+
+    def get_source_files_by_build_rule(self, tag):
+        sources = set()
+        for deps in self.get_build_rules(tag).values():
+            sources.update(deps)
+        return sources
+
+    def get_library_source(self):
+        return self.get_source_files_by_build_rule('add_library')
+
+    def get_executable_source(self):
+        return self.get_source_files_by_build_rule('add_executable')
+
     def remove_command(self, cmd):
         index = self.contents.index(cmd)
 
