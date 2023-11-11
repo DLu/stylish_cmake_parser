@@ -32,7 +32,14 @@ class Command:
             self.changed = True
 
     def first_token(self):
-        return self.get_real_sections()[0].values[0]
+        real_sections = self.get_real_sections()
+        if real_sections:
+            first = real_sections[0]
+            if first.name:
+                return first.name
+            elif first.values:
+                return first.values[0]
+        return ''
 
     def remove_sections(self, key):
         bad_sections = self.get_sections(key)
