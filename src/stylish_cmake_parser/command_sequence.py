@@ -90,7 +90,7 @@ class CommandSequence:
             tokens = []
             for token in var:
                 # TODO: Sometimes we want to skip comments
-                tokens.append(self.resolve_variables(token))
+                tokens.append(self.resolve_variables(token, error_on_missing))
                 # TODO: Sometimes resolved tokens need reparsing
                 # TODO: Sometimes we want to remove the quotes from the resolutions
             return tokens
