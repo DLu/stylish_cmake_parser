@@ -4,12 +4,18 @@ from .section import Section
 class Command:
     FORCE_REGENERATION = False
 
-    def __init__(self, command_name):
+    def __init__(self, command_name, parent=None):
         self.command_name = command_name
+        self.parent = parent
         self.original = None
         self.changed = False
         self.pre_paren = ''
         self.sections = []
+
+    def mark_changed(self):
+        self.changed = True
+        if self.parent:
+            self.parent.mark_changed()
 
     def get_real_sections(self):
         return [s for s in self.sections if not isinstance(s, str)]
@@ -24,12 +30,12 @@ class Command:
 
     def add_section(self, key, values=None, style=None):
         self.sections.append(Section(key, values, style, self))
-        self.changed = True
+        self.mark_changed()
 
     def add(self, section):
         if section:
             self.sections.append(section)
-            self.changed = True
+            self.mark_changed()
 
     def first_token(self):
         real_sections = self.get_real_sections()
@@ -45,7 +51,7 @@ class Command:
         bad_sections = self.get_sections(key)
         if not bad_sections:
             return
-        self.changed = True
+        self.mark_changed()
         self.sections = [section for section in self.sections if section not in bad_sections]
         if len(self.sections) == 1 and isinstance(self.sections[0], str):
             self.sections = []
@@ -65,7 +71,7 @@ class Command:
         else:
             last = sections[-1]
             last.values.append(s)
-        self.changed = True
+        self.mark_changed()
 
     def __repr__(self):
         if self.original and not self.changed and not Command.FORCE_REGENERATION:

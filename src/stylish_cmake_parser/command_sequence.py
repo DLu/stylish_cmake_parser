@@ -12,13 +12,20 @@ class CommandSequence:
         self.content_map = collections.defaultdict(list)
         self.depth = depth
         self.parent = parent
+        self.changed = False
 
         if initial_contents:
             for content in initial_contents:
                 self.add(content)
 
+    def mark_changed(self):
+        self.changed = True
+        if self.parent:
+            self.parent.mark_changed()
+
     def add(self, content):
         self.insert(content, smart_whitespace=False)
+        self.mark_changed()
 
     def insert(self, content, index=None, smart_whitespace=True):
         if index is None:
@@ -55,6 +62,8 @@ class CommandSequence:
 
         elif isinstance(content, CommandGroup):
             self.content_map['group'].append(content)
+
+        self.mark_changed()
 
     def get_variables(self):
         variables = {}
@@ -138,6 +147,7 @@ class CommandSequence:
 
         del self.contents[index]
         self.content_map[cmd.command_name].remove(cmd)
+        self.mark_changed()
 
     def remove_commands(self, cmd_name, recurse=True):
         for cmd in list(self.content_map[cmd_name]):

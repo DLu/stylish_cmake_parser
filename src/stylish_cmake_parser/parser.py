@@ -27,6 +27,8 @@ def match_command_groups(contents, base_depth=0, parent=None):
                 group = content
                 depth = base_depth + 1
             else:
+                if not isinstance(content, str):
+                    content.parent = revised_seq
                 revised_seq.add(content)
         else:
             if isinstance(content, Command):
@@ -110,7 +112,7 @@ class CMakeParser:
     def parse_command(self):
         command_name = self.match()
         original = command_name
-        cmd = Command(command_name)
+        cmd = Command(command_name, parent=self.seq)
         while self.get_type() in WhiteSpaceTokens:
             s = self.match()
             cmd.pre_paren += s
