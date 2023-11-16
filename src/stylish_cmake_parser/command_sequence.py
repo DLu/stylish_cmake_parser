@@ -1,9 +1,16 @@
 from .command import Command
 from .command_group import CommandGroup
 import collections
+from enum import IntEnum
 import re
 
 VARIABLE_PATTERN = re.compile(r'(\$\{([^\}]+)\})')  # Matches ${...}
+
+
+class MissingVariableResult(IntEnum):
+    ERROR = 1
+    ORIGINAL = 2
+    EMPTY = 3
 
 
 class CommandSequence:
@@ -77,8 +84,9 @@ class CommandSequence:
             variables['PROJECT_NAME'] = content.first_token()
         return variables
 
-    def resolve_variables(self, var, error_on_missing=True):
+    def resolve_variables(self, var, missing_result=MissingVariableResult.ORIGINAL):
         if isinstance(var, str):
+            prefix = ''
             s = var
             variables = self.get_variables()
 
@@ -86,20 +94,25 @@ class CommandSequence:
             while m:
                 full_string, variable_name = m.groups()
                 if variable_name not in variables:
-                    if error_on_missing:
+                    if missing_result == MissingVariableResult.ERROR:
                         raise KeyError(f'Variable {variable_name} not defined!')
-                    else:
+                    elif missing_result == MissingVariableResult.EMPTY:
                         replacement = ''
+                    else:
+                        index = s.index(full_string)
+                        prefix = s[:index + 1]
+                        s = s[index + 1:]
+                        replacement = full_string
                 else:
                     replacement = variables[variable_name]
                 s = s.replace(full_string, replacement)
                 m = VARIABLE_PATTERN.search(s)
-            return s
+            return prefix + s
         else:
             tokens = []
             for token in var:
                 # TODO: Sometimes we want to skip comments
-                tokens.append(self.resolve_variables(token, error_on_missing))
+                tokens.append(self.resolve_variables(token, missing_result))
                 # TODO: Sometimes resolved tokens need reparsing
                 # TODO: Sometimes we want to remove the quotes from the resolutions
             return tokens
