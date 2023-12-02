@@ -27,7 +27,9 @@ def match_command_groups(contents, base_depth=0, parent=None):
                 group = content
                 depth = base_depth + 1
             else:
-                revised_seq.add(content)
+                if not isinstance(content, str):
+                    content.parent = revised_seq
+                revised_seq.append(content)
         else:
             if isinstance(content, Command):
                 if content.command_name.lower() == group.command_name.lower():
@@ -37,7 +39,7 @@ def match_command_groups(contents, base_depth=0, parent=None):
                     if depth == base_depth:
                         recursive_seq = match_command_groups(current, base_depth + 1, revised_seq)
                         cg = CommandGroup(group, recursive_seq, content)
-                        revised_seq.add(cg)
+                        revised_seq.append(cg)
                         group = None
                         current = []
                         continue
@@ -63,13 +65,13 @@ class CMakeParser:
             while self.tokens:
                 token_type = self.get_type()
                 if token_type == TokenType.comment:
-                    self.seq.add(self.match(token_type))
+                    self.seq.append(self.match(token_type))
                 elif token_type == TokenType.newline or token_type == TokenType.whitespace:
                     s = self.match(token_type)
-                    self.seq.add(s)
+                    self.seq.append(s)
                 elif token_type in [TokenType.word, TokenType.caps]:
                     cmd = self.parse_command()
-                    self.seq.add(cmd)
+                    self.seq.append(cmd)
                 else:
                     raise CMakeParseException(f'Unexpected token of type {token_type.name}')
 
@@ -110,7 +112,7 @@ class CMakeParser:
     def parse_command(self):
         command_name = self.match()
         original = command_name
-        cmd = Command(command_name)
+        cmd = Command(command_name, parent=self.seq)
         while self.get_type() in WhiteSpaceTokens:
             s = self.match()
             cmd.pre_paren += s

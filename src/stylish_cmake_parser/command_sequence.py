@@ -19,13 +19,24 @@ class CommandSequence:
         self.content_map = collections.defaultdict(list)
         self.depth = depth
         self.parent = parent
+        self.changed = False
 
         if initial_contents:
             for content in initial_contents:
-                self.add(content)
+                self.append(content)
+
+    def mark_changed(self):
+        self.changed = True
+        if self.parent:
+            self.parent.mark_changed()
 
     def add(self, content):
         self.insert(content, smart_whitespace=False)
+
+    def append(self, content):
+        """Insert at end without any fanciness or marking changes"""
+        self.contents.append(content)
+        self._add_to_content_map(content)
 
     def insert(self, content, index=None, smart_whitespace=True):
         if index is None:
@@ -56,7 +67,11 @@ class CommandSequence:
                 to_insert.append('\n')
 
         self.contents = before + to_insert + after
+        self._add_to_content_map(content)
 
+        self.mark_changed()
+
+    def _add_to_content_map(self, content):
         if isinstance(content, Command):
             self.content_map[content.command_name].append(content)
 
@@ -124,6 +139,7 @@ class CommandSequence:
 
         del self.contents[index]
         self.content_map[cmd.command_name].remove(cmd)
+        self.mark_changed()
 
     def remove_commands(self, cmd_name, recurse=True):
         for cmd in list(self.content_map[cmd_name]):
