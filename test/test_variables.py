@@ -1,4 +1,4 @@
-from stylish_cmake_parser import parse_file, parse_command
+from stylish_cmake_parser import parse_file, parse_command, MissingVariableResult
 import pathlib
 import pytest
 
@@ -24,6 +24,7 @@ def test_variables():
     assert msg4 == ['roscompile', 'src/main.cpp']
 
     with pytest.raises(KeyError):
-        cmake.resolve_variables('${FAKE_VAR}')
+        cmake.resolve_variables('${FAKE_VAR}', MissingVariableResult.ERROR)
 
-    assert cmake.resolve_variables('${FAKE_VAR}', error_on_missing=False) == ''
+    assert cmake.resolve_variables('${FAKE_VAR}', MissingVariableResult.EMPTY) == ''
+    assert cmake.resolve_variables('${FAKE_VAR}', MissingVariableResult.ORIGINAL) == '${FAKE_VAR}'
