@@ -1,7 +1,7 @@
 import pytest
 import pathlib
 import tempfile
-from stylish_cmake_parser import parse_file, parse_command, Command
+from stylish_cmake_parser import parse_file, parse_command, Command, CommandSequence, CommandGroup
 from stylish_cmake_parser.scanner import compare_token_streams
 
 DATA_FOLDER = pathlib.Path(__file__).parent / 'data'
@@ -61,3 +61,27 @@ def test_writing(filepath):
     Command.FORCE_REGENERATION = True
     write_to_temp_and_compare(result, original)
     Command.FORCE_REGENERATION = False
+
+
+@pytest.mark.parametrize('filepath', TEST_FILES, ids=TEST_IDS)
+def test_parentage(filepath):
+
+    def parentage_check(content, parent):
+        if isinstance(content, str):
+            return
+
+        assert content.parent == parent, f'Parent of {content.__class__} not set properly'
+
+        if isinstance(content, Command):
+            for section in content.sections:
+                parentage_check(section, content)
+        elif isinstance(content, CommandSequence):
+            for content2 in content.contents:
+                parentage_check(content2, content)
+        elif isinstance(content, CommandGroup):
+            parentage_check(content.initial_cmd, content)
+            parentage_check(content.contents, content)
+            parentage_check(content.close_cmd, content)
+
+    result = parse_file(filepath)
+    parentage_check(result, None)
