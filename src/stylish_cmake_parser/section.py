@@ -23,6 +23,7 @@ class Section:
 
     def add(self, v):
         self.values.append(v)
+        self.mark_changed()
 
     def add_values(self, new_values, alpha_order=True):
         """Add the new_values to the values.
@@ -37,12 +38,14 @@ class Section:
         else:
             self.values += sorted(new_values)
 
+        self.mark_changed()
+
     def is_valid(self):
         return len(self.name) > 0 or len(self.values) > 0
 
     def mark_changed(self):
         if self.parent:
-            self.parent.changed = True
+            self.parent.mark_changed()
 
     def __repr__(self):
         s = self.style.prename
