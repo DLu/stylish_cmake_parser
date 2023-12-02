@@ -74,9 +74,11 @@ class CommandSequence:
     def _add_to_content_map(self, content):
         if isinstance(content, Command):
             self.content_map[content.command_name].append(content)
+            content.parent = self
 
         elif isinstance(content, CommandGroup):
             self.content_map['group'].append(content)
+            content.parent = self
 
     def get_variables(self):
         variables = {}
