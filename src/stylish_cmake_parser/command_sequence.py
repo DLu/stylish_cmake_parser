@@ -23,7 +23,7 @@ class CommandSequence:
 
         if initial_contents:
             for content in initial_contents:
-                self.add(content)
+                self.append(content)
 
     def mark_changed(self):
         self.changed = True
@@ -32,7 +32,11 @@ class CommandSequence:
 
     def add(self, content):
         self.insert(content, smart_whitespace=False)
-        self.mark_changed()
+
+    def append(self, content):
+        """Insert at end without any fanciness or marking changes"""
+        self.contents.append(content)
+        self._add_to_content_map(content)
 
     def insert(self, content, index=None, smart_whitespace=True):
         if index is None:
@@ -63,14 +67,16 @@ class CommandSequence:
                 to_insert.append('\n')
 
         self.contents = before + to_insert + after
+        self._add_to_content_map(content)
 
+        self.mark_changed()
+
+    def _add_to_content_map(self, content):
         if isinstance(content, Command):
             self.content_map[content.command_name].append(content)
 
         elif isinstance(content, CommandGroup):
             self.content_map['group'].append(content)
-
-        self.mark_changed()
 
     def get_variables(self):
         variables = {}
