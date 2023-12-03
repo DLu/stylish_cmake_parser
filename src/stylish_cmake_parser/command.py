@@ -38,7 +38,12 @@ class Command:
             self.mark_changed()
 
     def first_token(self):
-        return self.get_real_sections()[0].values[0]
+        for section in self.get_real_sections():
+            if section.name:
+                return section.name
+            elif section.values:
+                return section.values[0]
+        return ''
 
     def remove_sections(self, key):
         bad_sections = self.get_sections(key)

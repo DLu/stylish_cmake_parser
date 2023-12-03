@@ -31,6 +31,18 @@ def test_single_command():
     assert tokens == ['ament_cmake', 'REQUIRED']
 
 
+def test_first_token_cases():
+    # Covered above, but just to be sure...
+    cmd0 = parse_command('find_package(ament_cmake REQUIRED)')
+    assert cmd0.first_token() == 'ament_cmake'
+
+    cmd1 = parse_command('install(FILES data/cmake.ignore)')
+    assert cmd1.first_token() == 'FILES'
+
+    cmd2 = parse_command('find_package()')
+    assert cmd2.first_token() == ''
+
+
 def write_to_temp_and_compare(result, original):
     with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp:
         temp.write(str(result))
