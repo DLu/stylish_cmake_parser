@@ -33,13 +33,11 @@ class Command(CMakeElement):
             self.mark_changed()
 
     def first_token(self):
-        real_sections = self.get_real_sections()
-        if real_sections:
-            first = real_sections[0]
-            if first.name:
-                return first.name
-            elif first.values:
-                return first.values[0]
+        for section in self.get_real_sections():
+            if section.name:
+                return section.name
+            elif section.values:
+                return section.values[0]
         return ''
 
     def remove_sections(self, key):
