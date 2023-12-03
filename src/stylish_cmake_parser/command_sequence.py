@@ -1,5 +1,6 @@
 from .command import Command
 from .command_group import CommandGroup
+from .element import CMakeElement
 import collections
 from enum import IntEnum
 import re
@@ -13,22 +14,16 @@ class MissingVariableResult(IntEnum):
     EMPTY = 3
 
 
-class CommandSequence:
+class CommandSequence(CMakeElement):
     def __init__(self, initial_contents=None, depth=0, parent=None):
+        super().__init__(parent)
         self.contents = []
         self.content_map = collections.defaultdict(list)
         self.depth = depth
-        self.parent = parent
-        self.changed = False
 
         if initial_contents:
             for content in initial_contents:
                 self.append(content)
-
-    def mark_changed(self):
-        self.changed = True
-        if self.parent:
-            self.parent.mark_changed()
 
     def add(self, content):
         self.insert(content, smart_whitespace=False)
@@ -36,7 +31,7 @@ class CommandSequence:
     def append(self, content):
         """Insert at end without any fanciness or marking changes"""
         self.contents.append(content)
-        self._add_to_content_map(content)
+        self.update_references(content)
 
     def insert(self, content, index=None, smart_whitespace=True):
         if index is None:
@@ -67,11 +62,11 @@ class CommandSequence:
                 to_insert.append('\n')
 
         self.contents = before + to_insert + after
-        self._add_to_content_map(content)
+        self.update_references(content)
 
         self.mark_changed()
 
-    def _add_to_content_map(self, content):
+    def update_references(self, content):
         if isinstance(content, Command):
             self.content_map[content.command_name].append(content)
             content.parent = self

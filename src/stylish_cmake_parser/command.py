@@ -1,21 +1,16 @@
+from .element import CMakeElement
 from .section import Section
 
 
-class Command:
+class Command(CMakeElement):
     FORCE_REGENERATION = False
 
     def __init__(self, command_name, parent=None):
+        super().__init__(parent)
         self.command_name = command_name
-        self.parent = parent
         self.original = None
-        self.changed = False
         self.pre_paren = ''
         self.sections = []
-
-    def mark_changed(self):
-        self.changed = True
-        if self.parent:
-            self.parent.mark_changed()
 
     def get_real_sections(self):
         return [s for s in self.sections if not isinstance(s, str)]
