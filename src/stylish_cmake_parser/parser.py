@@ -27,8 +27,6 @@ def match_command_groups(contents, base_depth=0, parent=None):
                 group = content
                 depth = base_depth + 1
             else:
-                if not isinstance(content, str):
-                    content.parent = revised_seq
                 revised_seq.append(content)
         else:
             if isinstance(content, Command):

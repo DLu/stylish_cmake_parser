@@ -1,4 +1,5 @@
 from stylish_cmake_parser import parse_file, parse_command, MissingVariableResult
+from stylish_cmake_parser import Command, CommandGroup, CommandSequence
 import pathlib
 import pytest
 
@@ -28,3 +29,13 @@ def test_variables():
 
     assert cmake.resolve_variables('${FAKE_VAR}', MissingVariableResult.EMPTY) == ''
     assert cmake.resolve_variables('${FAKE_VAR}', MissingVariableResult.ORIGINAL) == '${FAKE_VAR}'
+
+
+def test_recursion():
+    start = Command('if')
+    start.add_token('TESTING')
+    end = Command('endif')
+    inner = CommandSequence()
+    cg = CommandGroup(start, inner, end)
+
+    assert not cg.get_variables()
