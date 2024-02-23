@@ -102,6 +102,12 @@ def test_styling():
     section = cmd.get_section('FILES')
     section.style = SectionStyle('\n    ', '\n      ', '\n      ')
     section = cmd.get_section('DESTINATION')
-    section.style.prename = '\n    '
-    section.mark_changed()
+    section.set_style_attribute('prename', '\n    ')
+    assert cmd.changed
     assert str(cmd) == INSTALL_COMMAND4
+
+    # reset
+    cmd.changed = False
+
+    section.set_style_attribute('prename', '\n    ')
+    assert not cmd.changed
