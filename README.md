@@ -1,4 +1,5 @@
-# stylish_cmake_parser
+![stylish cmake parser logo](docs/Logo.png)
+
 Parser for CMake files with the ability to retain the whitespace "style" after modifying
 
 Originally part of the [`roscompile` ROS package](https://github.com/DLu/roscompile) but now spun out as an independent Python package.
