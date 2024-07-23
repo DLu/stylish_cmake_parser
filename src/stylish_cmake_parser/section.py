@@ -46,6 +46,13 @@ class Section(CMakeElement):
     def is_valid(self):
         return len(self.name) > 0 or len(self.values) > 0
 
+    def set_style_attribute(self, attribute, new_value):
+        existing_value = getattr(self.style, attribute)
+        if existing_value == new_value:
+            return
+        setattr(self.style, attribute, new_value)
+        self.mark_changed()
+
     def __repr__(self):
         s = self.style.prename
         if len(self.name) > 0:
