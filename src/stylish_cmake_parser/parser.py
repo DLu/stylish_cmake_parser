@@ -4,14 +4,26 @@ from .command import Command
 from .scanner import scan_cmake_tokens, TokenType, WhiteSpaceTokens
 from .section import Section, SectionStyle
 
-import sys
 import collections
 
 NOT_REAL = WhiteSpaceTokens + [TokenType.comment]
 
 
 class CMakeParseException(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self, *args, **kwargs)
+        self.line_no = None
+        self.char_no = None
+        self.filepath = None
+
+    def __str__(self):
+        s = ' '.join(self.args)
+        if self.filepath:
+            s += f' in {self.filepath}'
+
+        if self.line_no:
+            s += f' at line {self.line_no}, char {self.char_no}'
+        return s
 
 
 def match_command_groups(contents, base_depth=0, parent=None):
@@ -54,6 +66,7 @@ class CMakeParser:
         self.seq = CommandSequence()
 
         self.tokens = scan_cmake_tokens(s)
+        final_token = self.tokens[-1]
 
         if debug:
             for token in self.tokens:
@@ -75,11 +88,16 @@ class CMakeParser:
 
             # Match Command Groups
             self.seq = match_command_groups(self.seq.contents, self.seq.depth)
-        except Exception:
+        except Exception as e:
             if self.tokens:
                 token = self.tokens[0]
                 ind = token.start_index
-                sys.stderr.write(f'Error on Line {ind.line_no}, Char {ind.char_no}\n')
+                e.line_no = ind.line_no
+                e.char_no = ind.char_no
+            else:
+                ind = final_token.end_index
+                e.line_no = ind.line_no
+                e.char_no = ind.char_no
             raise
 
         if debug:
@@ -105,7 +123,7 @@ class CMakeParser:
             token = self.tokens.pop(0)
             return token.value
         else:
-            raise CMakeParseException(f'Expected type "{token_type.name}" but got "{self.get_type()}"')
+            raise CMakeParseException(f'Expected type "{token_type.name}" but got "{self.get_type().name}"')
 
     def parse_command(self):
         command_name = self.match()
