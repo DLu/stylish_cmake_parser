@@ -66,7 +66,7 @@ class CMakeParser:
         self.seq = CommandSequence()
 
         self.tokens = scan_cmake_tokens(s)
-        final_token = self.tokens[-1]
+        final_token = self.tokens[-1] if self.tokens else None
 
         if debug:
             for token in self.tokens:
@@ -94,7 +94,7 @@ class CMakeParser:
                 ind = token.start_index
                 e.line_no = ind.line_no
                 e.char_no = ind.char_no
-            else:
+            elif final_token:
                 ind = final_token.end_index
                 e.line_no = ind.line_no
                 e.char_no = ind.char_no
