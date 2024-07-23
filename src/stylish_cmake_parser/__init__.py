@@ -28,4 +28,9 @@ def parse_file(filename, debug=False):
 
     with open(filename) as f:
         s = f.read()
-    return parse_commands(s, debug)
+
+    try:
+        return parse_commands(s, debug)
+    except CMakeParseException as e:
+        e.filepath = filename
+        raise
