@@ -123,7 +123,7 @@ class CMakeParser:
             token = self.tokens.pop(0)
             return token.value
         else:
-            raise CMakeParseException(f'Expected type "{token_type.name}" but got "{self.get_type()}"')
+            raise CMakeParseException(f'Expected type "{token_type.name}" but got "{self.get_type().name}"')
 
     def parse_command(self):
         command_name = self.match()
